@@ -150,8 +150,8 @@ def read_pieces(img: Image.Image, geom: BoardGeometry) -> list[Piece]:
     mask = contrast_mask(crop, blur_radius=10, threshold=35)
     boxes = component_boxes(mask, min_pixels=max(120, int(w * h * 0.00004)))
     pitch = geom.cell * 0.445
-    pieces = []
-    for _, lx, ty, rx, by in boxes:
+    candidates = []
+    for pixels, lx, ty, rx, by in boxes:
         bw = rx - lx
         bh = by - ty
         if not (pitch * 0.65 <= bw <= pitch * 4.2 and pitch * 0.65 <= bh <= pitch * 4.2):
@@ -164,6 +164,28 @@ def read_pieces(img: Image.Image, geom: BoardGeometry) -> list[Piece]:
         if not cells or len(cells) > 9:
             continue
         cx = (lx + rx) / 2.0
+        candidates.append((pixels, (lx, ty, rx, by), cells, cx))
+
+    selected = []
+    for pixels, box, cells, cx in sorted(candidates, key=lambda item: item[0], reverse=True):
+        lx, ty, rx, by = box
+        area = max(1, (rx - lx) * (by - ty))
+        duplicate = False
+        for _, selected_box, _, _ in selected:
+            sx0, sy0, sx1, sy1 = selected_box
+            ix0 = max(lx, sx0)
+            iy0 = max(ty, sy0)
+            ix1 = min(rx, sx1)
+            iy1 = min(by, sy1)
+            inter = max(0, ix1 - ix0) * max(0, iy1 - iy0)
+            if inter / area > 0.45:
+                duplicate = True
+                break
+        if not duplicate:
+            selected.append((pixels, box, cells, cx))
+
+    pieces = []
+    for _, _, cells, cx in selected:
         color = PALETTE[len(pieces) % len(PALETTE)]
         pieces.append(Piece(name=f"piece_{len(pieces) + 1}", cells=cells, color=color, center_x=cx))
     pieces.sort(key=lambda p: p.center_x)
