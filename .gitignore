@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+
+*.log
+*.err.log
+drag_debug/
+
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.ipynb
+
+.env
+*.token
