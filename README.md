@@ -34,8 +34,19 @@ $env:TELEGRAM_BOT_TOKEN="YOUR_BOT_TOKEN"
 
 Send the bot a full screenshot where the board and all three pieces are visible.
 
+## Deploy
+
+Railpack uses `railpack.json` and starts the bot with:
+
+```bash
+python main.py
+```
+
+Set `TELEGRAM_BOT_TOKEN` in your hosting environment variables.
+
 ## Files
 
 - `blockblast_solver.py` - screenshot recognition, solver, and image annotation.
 - `telegram_blockblast_bot.py` - minimal Telegram long-polling bot.
+- `main.py` - deployment entrypoint.
 - `run_telegram_blockblast_bot.ps1` - Windows launcher.
